@@ -1,6 +1,6 @@
 PRJ = easy-stun
 
-OBJS = main.o es_node.o
+OBJS = main.o es_node.o es_node_local.o es_node_remote.o
 
 PRJ_LDFLAGS += -lssl -lcrypto
 

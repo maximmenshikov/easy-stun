@@ -1,8 +1,4 @@
-
 #include "es_node.h"
-#include "es_status.h"
-
-
 
 int main()
 {
@@ -11,7 +7,8 @@ int main()
 	es_node node;
 
 	es_init(&node);
-	es_bind(&node, bind_port);
+	es_local_bind(&node, bind_port);
+	es_remote_bind(&node, "", 3478);
 	es_fini(&node);
 
 	return 0;
