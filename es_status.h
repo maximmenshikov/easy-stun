@@ -1,0 +1,10 @@
+#pragma once
+
+typedef enum es_status {
+	ES_EOK,
+	ES_ECONNFAIL,
+	ES_ESKCREATEFAIL,
+	ES_ESKBINDFAIL,
+	ES_ESKCLOEXECFAIL,
+	ES_ESKNONBLOCKFAIL,
+} es_status;
