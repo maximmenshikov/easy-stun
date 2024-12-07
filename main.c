@@ -1,14 +1,25 @@
 #include "es_node.h"
+#include "es_params.h"
+#include <stdio.h>
 
-int main()
+int main(int argc, const char *argv[])
 {
 	es_status rc;
-	uint16_t bind_port = 32300;
+	uint16_t local_port;
 	es_node node;
+	es_params params;
+
+
+	rc = es_params_init(&params, argc, argv);
+	if (rc != ES_EOK)
+	{
+		printf("Invalid parameters");
+		return -1;
+	}
 
 	es_init(&node);
-	es_local_bind(&node, bind_port);
-	es_remote_bind(&node, "", 3478);
+	es_local_bind(&node, params.local_port);
+	es_remote_bind(&node, params.remote_addr, params.remote_port);
 	es_fini(&node);
 
 	return 0;

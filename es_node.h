@@ -2,7 +2,8 @@
 #include "es_status.h"
 #include <inttypes.h>
 
-typedef struct es_node {
+typedef struct es_node
+{
 	int sk;
 } es_node;
 
