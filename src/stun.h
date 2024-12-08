@@ -12,11 +12,11 @@ typedef enum stun_message_type
 
 typedef struct stun_hdr
 {
-	uint16_t message_type;
-	uint16_t message_len;
-	uint32_t magic_cookie;
-	uint8_t  tid[12];
-	uint8_t  data[0];
+    uint16_t message_type;
+    uint16_t message_len;
+    uint32_t magic_cookie;
+    uint8_t  tid[12];
+    uint8_t  data[0];
 } stun_hdr;
 
 typedef enum stun_attr_type

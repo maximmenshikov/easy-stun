@@ -5,8 +5,8 @@
 #include "es_params.h"
 
 typedef struct es_msg {
-	size_t max_len;
-	stun_hdr *hdr;
+    size_t max_len;
+    stun_hdr *hdr;
 } es_msg;
 
 void es_msg_hdr_init(es_msg *msg, uint16_t type);
