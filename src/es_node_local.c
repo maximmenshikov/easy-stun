@@ -85,7 +85,7 @@ es_local_process_binding_response(es_node *node,
         xored = ES_TRUE;
     }
 
-    ma = attr->value;
+    ma = (stun_attr_mapped_address *)attr->value;
 
     switch (ma->family)
     {
@@ -142,7 +142,7 @@ es_local_process_binding_error(es_node *node,
         return rc;
     }
 
-    ec = attr->value;
+    ec = (stun_attr_error_code *)attr->value;
 
     cls_number = ntohl(ec->cls_number);
 
@@ -181,7 +181,8 @@ es_local_recv(es_node *node)
         return ES_ENODATA;
     }
 
-    ret = recvfrom(node->sk, buf, sizeof(buf), 0, &addr, &addr_len);
+    ret = recvfrom(node->sk, buf, sizeof(buf), 0, (struct sockaddr *)&addr,
+                   &addr_len);
     if (ret == -1)
     {
         err("Receive failure");
@@ -191,7 +192,7 @@ es_local_recv(es_node *node)
     hdr = (stun_hdr *)buf;
     if (ret < sizeof(stun_hdr))
     {
-        err("Invalid response: %lu vs %lu", ret, sizeof(stun_hdr));
+        err("Invalid response: %d vs %lu", ret, sizeof(stun_hdr));
         return ES_ERESPONSEINVALID;
     }
 
