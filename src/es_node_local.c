@@ -76,6 +76,8 @@ es_local_process_binding_response(es_node *node,
 		rc = es_msg_read_attr(msg, STUN_ATTR_XOR_MAPPED_ADDRESS, &attr);
 		if (rc != ES_EOK || attr == NULL)
 		{
+			if (rc == ES_EOK && attr == NULL)
+				rc = ES_ENODATA;
 			err("%s: Attribute not found: mapped address", __func__);
 			return rc;
 		}
@@ -118,6 +120,8 @@ es_local_process_binding_response(es_node *node,
 		}
 	}
 
+	node->map_error = 0;
+	node->status = ES_MAP_STATUS_MAPPED;
 	return ES_EOK;
 }
 
@@ -125,6 +129,27 @@ es_status
 es_local_process_binding_error(es_node *node,
 	                           es_msg *msg)
 {
+	es_status rc;
+	stun_attr *attr;
+	stun_attr_error_code *ec;
+	uint32_t cls_number;
+
+	rc = es_msg_read_attr(msg, STUN_ATTR_ERROR_CODE, &attr);
+	if (rc != ES_EOK || attr == NULL)
+	{
+		if (rc == ES_EOK && attr == NULL)
+			rc = ES_ENODATA;
+		return rc;
+	}
+
+	ec = attr->value;
+
+	cls_number = ntohl(ec->cls_number);
+
+	memset(node->mapped_addr, 0, sizeof(node->mapped_addr));
+	node->mapped_port = 0;
+	node->map_error = ((cls_number >> 8) & 0x07) * 100 + (cls_number & 0xFF);
+	node->status = ES_MAP_STATUS_ERROR;
 	return ES_EOK;
 }
 

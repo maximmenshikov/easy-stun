@@ -53,3 +53,9 @@ typedef struct stun_attr_mapped_address
     uint16_t port;
     uint8_t addr[0];
 } stun_attr_mapped_address;
+
+typedef struct stun_attr_error_code
+{
+    uint32_t cls_number;
+    char reason[];
+} __attribute__((packed)) stun_attr_error_code;

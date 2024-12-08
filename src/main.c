@@ -1,6 +1,7 @@
 #include "es_node.h"
 #include "es_params.h"
 #include <stdio.h>
+#include "stun.h"
 
 int main(int argc, const char *argv[])
 {
@@ -8,7 +9,6 @@ int main(int argc, const char *argv[])
 	uint16_t local_port;
 	es_node node;
 	es_params params;
-
 
 	rc = es_params_init(&params, argc, argv);
 	if (rc != ES_EOK)
