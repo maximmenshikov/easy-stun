@@ -34,5 +34,6 @@
 /easy-stun
 /.build_wrap
 /.build_wrap_config
+/.build_wrap_script
 ._*
 *.sublime-workspace
