@@ -1,10 +1,16 @@
 #!/bin/bash
 export TOP_DIR="$(cd "$(dirname "$(which "$0")")"/.. ; pwd -P)"
 
-cd "${TOP_DIR}"
+pushd "${TOP_DIR}"
 
 if [ -f ".build_wrap" ] ; then
     ./.build_wrap
 else
-    make
+    mkdir -p build
+    pushd build
+        cmake -GNinja ..
+        ninja
+    popd
 fi
+
+popd
