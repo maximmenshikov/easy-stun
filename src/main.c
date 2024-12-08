@@ -2,6 +2,7 @@
 #include "es_params.h"
 #include <stdio.h>
 #include "stun.h"
+#include "debug.h"
 
 int main(int argc, const char *argv[])
 {
@@ -10,10 +11,17 @@ int main(int argc, const char *argv[])
     es_node node;
     es_params params;
 
-    rc = es_params_init(&params, argc, argv);
+    rc = es_params_read_from_cmdline(&params, argc, argv);
     if (rc != ES_EOK)
     {
-        printf("Invalid parameters");
+        crit("Invalid command line arguments");
+        return -1;
+    }
+
+    rc = es_params_read_config(&params);
+    if (rc != ES_EOK)
+    {
+        crit("Invalid config parameters");
         return -1;
     }
 

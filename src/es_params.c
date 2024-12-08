@@ -2,13 +2,92 @@
 #include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "es_params.h"
 #include "es_status.h"
 
 #define BIT(_num) (1 << (_num))
 
+static es_status
+parse_argument(es_params *params, const char *var, const char *value)
+{
+    #define PARSE_PORT(__name, __struct_name, __bit) do {                   \
+        if (strcmp(var, __name) == 0)                                       \
+        {                                                                   \
+            params->__struct_name = atoi(value);                            \
+            params->present_fields |= BIT(__bit);                           \
+        }                                                                   \
+    } while (0)
+    #define PARSE_STR(__name, __struct_name, __bit) do {                    \
+        if (strcmp(var, __name) == 0)                                       \
+        {                                                                   \
+            if (strlen(value) >= sizeof(params->__struct_name))             \
+                return ES_EPARAMINVALID;                                    \
+            strcpy(params->__struct_name, value);                           \
+            params->present_fields |= BIT(__bit);                           \
+        }                                                                   \
+    } while (0)
+
+    PARSE_PORT("local-port", local_port, 0);
+    PARSE_STR("remote-addr", remote_addr, 1);
+    PARSE_PORT("remote-port", remote_port, 2);
+    PARSE_STR("username", username, 3);
+    PARSE_STR("password", password, 4);
+    PARSE_STR("script", script, 5);
+
+    if (params->present_fields !=  ((1 << ES_TOTAL_PARAMS) - 1))
+    {
+        return ES_EPARAMINSUFFICIENT;
+    }
+
+    #undef PARSE_PORT
+    #undef PARSE_STR
+    return ES_EOK;
+}
+
 es_status
-es_params_init(es_params *params, int argc, const char *argv[])
+es_params_read_config(es_params *params)
+{
+    es_status rc;
+    char line[1024];
+    FILE *f;
+
+    f = fopen(params->config, "r");
+    if (f == NULL)
+        return ES_EIO;
+
+    rc = ES_EOK;
+    while (fgets(line, sizeof(line), f) != NULL)
+    {
+        char *cmd_end = strchr(line, ' ');
+        char *command;
+        char *rest;
+
+        if (cmd_end == NULL)
+            return ES_EINVAL;
+
+        *cmd_end = '\0';
+        command = line;
+        rest = cmd_end + 1;
+
+        cmd_end = strchr(rest, '\n');
+        if (cmd_end != NULL)
+            *cmd_end = '\0';
+
+        cmd_end = strchr(rest, '\r');
+        if (cmd_end != NULL)
+            *cmd_end = '\0';
+
+        parse_argument(params, command, rest);
+    }
+
+    fclose(f);
+
+    return ES_EOK;
+}
+
+es_status
+es_params_read_from_cmdline(es_params *params, int argc, const char *argv[])
 {
     size_t i;
     const int total_params = 5;
@@ -18,70 +97,18 @@ es_params_init(es_params *params, int argc, const char *argv[])
 
     for (i = 1; i < argc; ++i)
     {
-        if (strcmp(argv[i], "--local-port") == 0)
+        if (strcmp(argv[i], "--config") == 0)
         {
             if ((i + 1) >= argc)
                 return ES_EPARAMMISSING;
 
-            params->local_port = atoi(argv[i + 1]);
-            param_bits |= BIT(0);
-
-            ++i;
-        }
-        else if (strcmp(argv[i], "--remote-addr") == 0)
-        {
-            if ((i + 1) >= argc)
-                return ES_EPARAMMISSING;
-
-            if (strlen(argv[i + 1]) + 1 >= sizeof(params->remote_addr))
+            if (strlen(argv[i + 1]) + 1 >= sizeof(params->config))
                 return ES_EPARAMINVALID;
 
-            strcpy(params->remote_addr, argv[i + 1]);
-            param_bits |= BIT(1);
+            strcpy(params->config, argv[i + 1]);
 
             ++i;
         }
-        else if (strcmp(argv[i], "--remote-port") == 0)
-        {
-            if ((i + 1) >= argc)
-                return ES_EPARAMMISSING;
-
-            params->remote_port = atoi(argv[i + 1]);
-            param_bits |= BIT(2);
-
-            ++i;
-        }
-        else if (strcmp(argv[i], "--username") == 0)
-        {
-            if ((i + 1) >= argc)
-                return ES_EPARAMMISSING;
-
-            if (strlen(argv[i + 1]) + 1 >= sizeof(params->username))
-                return ES_EPARAMINVALID;
-
-            strcpy(params->username, argv[i + 1]);
-            param_bits |= BIT(3);
-
-            ++i;
-        }
-        else if (strcmp(argv[i], "--password") == 0)
-        {
-            if ((i + 1) >= argc)
-                return ES_EPARAMMISSING;
-
-            if (strlen(argv[i + 1]) + 1 >= sizeof(params->password))
-                return ES_EPARAMINVALID;
-
-            strcpy(params->password, argv[i + 1]);
-            param_bits |= BIT(4);
-
-            ++i;
-        }
-    }
-
-    if (param_bits !=  ((1 << total_params) - 1))
-    {
-        return ES_EPARAMINSUFFICIENT;
     }
 
     return ES_EOK;

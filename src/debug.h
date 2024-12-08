@@ -36,3 +36,5 @@
 #else
 #define ring(__fmt...) do { } while (0)
 #endif
+
+#define crit(__fmt...) ring(__fmt)
