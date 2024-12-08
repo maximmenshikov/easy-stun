@@ -37,3 +37,6 @@
 /.build_wrap_script
 ._*
 *.sublime-workspace
+/build
+*.diff
+
