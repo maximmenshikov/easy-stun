@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -127,6 +128,17 @@ es_local_process_binding_response(es_node *node,
         }
     }
 
+    {
+        char full_cmd[1024];
+        int ret;
+
+        sprintf(full_cmd, "%s %s %u", node->params.script,
+            node->status.mapped_addr,
+            (unsigned)node->status.mapped_port);
+        ret = system(full_cmd);
+        ring("Script '%s' executed with return code %d", node->params.script,
+             ret);
+    }
     return ES_EOK;
 }
 
