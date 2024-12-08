@@ -19,7 +19,7 @@
 #include "debug.h"
 
 es_status
-es_remote_bind(es_node *node, es_params *params)
+es_remote_bind(es_node *node)
 {
     es_status rc;
     struct hostent *host;
@@ -32,14 +32,14 @@ es_remote_bind(es_node *node, es_params *params)
     msg.hdr = (stun_hdr *)req;
     msg.max_len = sizeof(req);
 
-    host = gethostbyname(params->remote_addr);
+    host = gethostbyname(node->params.remote_addr);
     if (host == NULL)
     {
         rc = ES_EDNSFAIL;
         goto err;
     }
 
-    addr.sin_port = htons(params->remote_port);
+    addr.sin_port = htons(node->params.remote_port);
     addr.sin_family = AF_INET;
     memcpy(&(addr.sin_addr), host->h_addr_list[0], host->h_length);
 
@@ -47,8 +47,8 @@ es_remote_bind(es_node *node, es_params *params)
     EXIT_ON_ERROR("Failed to add username",
                   es_msg_add_attr(&msg,
                                   STUN_ATTR_USERNAME,
-                                  params->username,
-                                  strlen(params->username)));
+                                  node->params.username,
+                                  strlen(node->params.username)));
     EXIT_ON_ERROR("Failed to add connection request binding",
                   es_msg_add_attr(&msg,
                                   STUN_ATTR_CONN_REQUEST_BINDING,
@@ -60,7 +60,7 @@ es_remote_bind(es_node *node, es_params *params)
                                   "",
                                   0));
     EXIT_ON_ERROR("Failed to add message integrity",
-                  es_msg_add_integrity(&msg, params->password));
+                  es_msg_add_integrity(&msg, node->params.password));
 
     msg.hdr->message_len = htons(msg.hdr->message_len);
     ret = sendto(node->sk, req, ntohs(msg.hdr->message_len) + sizeof(stun_hdr),
@@ -75,7 +75,9 @@ es_remote_bind(es_node *node, es_params *params)
     es_init_status(node, ES_MAP_STATUS_SENT);
     es_expect_tid(node, msg.hdr->tid);
 
-    dbg("Sent %d bytes", ret);
+    ring("[%s:%u] Sent request with %d bytes",
+         node->params.remote_addr, (unsigned)node->params.remote_port,
+         ret);
     return ES_EOK;
 
 err:

@@ -15,7 +15,7 @@
 #include "helper.h"
 
 es_status
-es_local_bind(es_node *node, es_params *params)
+es_local_bind(es_node *node)
 {
     struct sockaddr_in addr = { 0 };
     int ret;
@@ -31,7 +31,7 @@ es_local_bind(es_node *node, es_params *params)
 
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr.sin_port = htons(params->local_port);
+    addr.sin_port = htons(node->params.local_port);
 
     ret = bind(sk, (struct sockaddr *)&addr, sizeof(addr));
     if (ret < 0)
@@ -112,7 +112,10 @@ es_local_process_binding_response(es_node *node,
 
             node->status.mapped_port = port;
             sprintf(node->status.mapped_addr, "%s", inet_ntoa(ip));
-            dbg("Mapped to %s:%u", node->status.mapped_addr,
+            ring("[%s:%u] Mapped to %s:%u",
+                node->params.remote_addr,
+                (unsigned)node->params.remote_port,
+                node->status.mapped_addr,
                 node->status.mapped_port);
             break;
         }
@@ -151,6 +154,10 @@ es_local_process_binding_error(es_node *node,
     es_init_status(node, ES_MAP_STATUS_ERROR);
     node->status.map_error = ((cls_number >> 8) & 0x07) * 100 +
         (cls_number & 0xFF);
+    ring("[%s:%u] Error %u",
+         node->params.remote_addr,
+         (unsigned)node->params.remote_port,
+         (unsigned)node->status.map_error);
     return ES_EOK;
 }
 
@@ -224,10 +231,8 @@ es_local_recv(es_node *node)
         switch (message_type)
         {
             case STUN_MSG_TYPE_BINDING_RESPONSE:
-                ring("Got binding response");
                 return es_local_process_binding_response(node, &msg);
             case STUN_MSG_TYPE_BINDING_ERROR:
-                ring("Got binding error");
                 return es_local_process_binding_error(node, &msg);
             default:
                 warn("Got unsupported message");

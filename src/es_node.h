@@ -31,15 +31,17 @@ typedef struct es_node
 {
     int             sk;
     es_node_status  status;
+    es_params       params;
 } es_node;
 
 extern void es_init(es_node *node);
 extern void es_fini(es_node *node);
+extern void es_init_params(es_node *node, es_params *params);
 extern void es_init_status(es_node *node, es_map_status_code code);
 extern void es_expect_tid(es_node *node, uint8_t *tid);
 
-extern es_status es_local_bind(es_node *node, es_params *params);
+extern es_status es_local_bind(es_node *node);
 extern es_status es_local_recv(es_node *node);
 extern es_status es_local_conn_request(es_node *node, const char *buf,
     uint32_t buf_len);
-extern es_status es_remote_bind(es_node *node, es_params *params);
+extern es_status es_remote_bind(es_node *node);
