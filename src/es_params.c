@@ -14,7 +14,10 @@ parse_argument(es_params *params, const char *var, const char *value)
     #define PARSE_PORT(__name, __struct_name, __bit) do {                   \
         if (strcmp(var, __name) == 0)                                       \
         {                                                                   \
-            params->__struct_name = atoi(value);                            \
+            if (strcmp(value, "any") == 0)                                  \
+                params->__struct_name = 0;                                  \
+            else                                                            \
+                params->__struct_name = atoi(value);                        \
             params->present_fields |= BIT(__bit);                           \
             return ES_EOK;                                                  \
         }                                                                   \

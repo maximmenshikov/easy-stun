@@ -26,24 +26,30 @@ es_local_bind(es_node *node)
     sk = socket(AF_INET, SOCK_DGRAM, 0);
     if (sk < 0)
     {
+        dbg("Failed to open socket");
         rc = ES_ECONNFAIL;
         goto err;
     }
 
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr.sin_port = htons(node->params.local_port);
-
-    ret = bind(sk, (struct sockaddr *)&addr, sizeof(addr));
-    if (ret < 0)
+    if (node->params.local_port != 0)
     {
-        rc = ES_ESKBINDFAIL;
-        goto err;
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = htonl(INADDR_ANY);
+        addr.sin_port = htons(node->params.local_port);
+
+        ret = bind(sk, (struct sockaddr *)&addr, sizeof(addr));
+        if (ret < 0)
+        {
+            dbg("Failed to bind socket");
+            rc = ES_ESKBINDFAIL;
+            goto err;
+        }
     }
 
     ret = fcntl(sk, F_GETFD);
     if (ret == -1 || fcntl(sk, F_SETFD, ret | FD_CLOEXEC) != 0)
     {
+        dbg("Failed to change cloexec");
         rc = ES_ESKCLOEXECFAIL;
         goto err;
     }
@@ -51,6 +57,7 @@ es_local_bind(es_node *node)
     ret = fcntl(sk, F_GETFL);
     if (ret == -1 || fcntl(sk, F_SETFL, ret | O_NONBLOCK) != 0)
     {
+        dbg("Failed to make socket non-blocking");
         rc = ES_ESKNONBLOCKFAIL;
         goto err;
     }
@@ -132,7 +139,7 @@ es_local_process_binding_response(es_node *node,
         char full_cmd[1024];
         int ret;
 
-        sprintf(full_cmd, "%s %s %u", node->params.script,
+        sprintf(full_cmd, "%s bind %s %u", node->params.script,
             node->status.mapped_addr,
             (unsigned)node->status.mapped_port);
         ret = system(full_cmd);

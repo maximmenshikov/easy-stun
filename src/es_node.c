@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include "es_node.h"
 #include "es_status.h"
+#include "debug.h"
 
 void
 es_init(es_node *node)
@@ -35,7 +36,10 @@ es_twoway_bind(es_node *node)
     es_init_status(node, ES_MAP_STATUS_NONE);
     rc = es_local_bind(node);
     if (rc != ES_EOK)
+    {
+        err("Failed to bind locally");
         return rc;
+    }
 
     return es_remote_bind(node);
 }
