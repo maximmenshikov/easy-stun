@@ -11,6 +11,7 @@
 void
 es_init(es_node *node)
 {
+	memset(node, 0, sizeof(es_node));
 	node->sk = -1;
 }
 

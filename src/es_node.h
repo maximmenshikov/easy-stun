@@ -1,11 +1,16 @@
 #pragma once
 #include "es_status.h"
 #include "es_params.h"
+#include "es_bool.h"
 #include <inttypes.h>
 
 typedef struct es_node
 {
-	int sk;
+	int      sk;
+
+	es_bool  mapped;
+	char     mapped_addr[512];
+	uint16_t mapped_port;
 } es_node;
 
 extern void es_init(es_node *node);

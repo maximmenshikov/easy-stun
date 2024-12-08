@@ -5,9 +5,12 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include "es_node.h"
 #include "es_status.h"
 #include "stun.h"
+#include "es_msg.h"
+#include "es_bool.h"
 #include "debug.h"
 
 es_status
@@ -59,9 +62,76 @@ err:
 }
 
 es_status
+es_local_process_binding_response(es_node *node,
+	                              es_msg *msg)
+{
+	es_status rc;
+	stun_attr *attr;
+	stun_attr_mapped_address *ma;
+	es_bool xored = ES_FALSE;
+
+	rc = es_msg_read_attr(msg, STUN_ATTR_MAPPED_ADDRESS, &attr);
+	if (rc != ES_EOK || attr == NULL)
+	{
+		rc = es_msg_read_attr(msg, STUN_ATTR_XOR_MAPPED_ADDRESS, &attr);
+		if (rc != ES_EOK || attr == NULL)
+		{
+			err("%s: Attribute not found: mapped address", __func__);
+			return rc;
+		}
+
+		xored = ES_TRUE;
+	}
+
+	ma = attr->value;
+
+	switch (ma->family)
+	{
+		case STUN_AF_IPV4:
+		{
+			uint32_t val = ntohl(*(uint32_t *)(&ma->addr));
+			uint32_t unxored = val;
+			uint32_t port = ntohs(ma->port);
+			struct in_addr ip;
+
+			if (xored)
+			{
+				uint32_t warped_cookie = ntohl(msg->hdr->magic_cookie);
+				uint16_t warped_cookie16 = (warped_cookie & 0xFFFF0000) >> 16;
+
+				val = val ^ warped_cookie;
+				port = port ^ warped_cookie16;
+			}
+
+			ip.s_addr = htonl(val);
+
+			node->mapped_port = port;
+			sprintf(node->mapped_addr, "%s", inet_ntoa(ip));
+			dbg("Mapped to %s:%u", node->mapped_addr, node->mapped_port);
+			break;
+		}
+		case STUN_AF_IPV6:
+		{
+			err("%s: Attribute error: mapped address is IPv6 (unsupported)",
+				__func__);
+			return ES_ENOTSUPP;
+		}
+	}
+
+	return ES_EOK;
+}
+
+es_status
+es_local_process_binding_error(es_node *node,
+	                           es_msg *msg)
+{
+	return ES_EOK;
+}
+
+es_status
 es_local_recv(es_node *node)
 {
-	char msg[4096];
+	char buf[4096];
 	unsigned int addr_len;
 	struct timeval timeout;
 	struct sockaddr_in addr = {0};
@@ -69,6 +139,10 @@ es_local_recv(es_node *node)
 	int ret;
 	stun_hdr *hdr;
 	uint16_t message_type;
+	es_msg msg;
+
+	msg.hdr = (stun_hdr *)buf;
+	msg.max_len = sizeof(buf);
 
 	FD_ZERO(&fds);
 	FD_SET(node->sk, &fds);
@@ -82,14 +156,14 @@ es_local_recv(es_node *node)
 		return ES_ENODATA;
 	}
 
-	ret = recvfrom(node->sk, msg, sizeof(msg), 0, &addr, &addr_len);
+	ret = recvfrom(node->sk, buf, sizeof(buf), 0, &addr, &addr_len);
 	if (ret == -1)
 	{
 		err("Receive failure");
 		return ES_ERECVFAIL;
 	}
 
-	hdr = (stun_hdr *)msg;
+	hdr = (stun_hdr *)buf;
 	if (ret < sizeof(stun_hdr))
 	{
 		err("Invalid response: %lu vs %lu", ret, sizeof(stun_hdr));
@@ -107,10 +181,10 @@ es_local_recv(es_node *node)
 	{
 		case STUN_MSG_TYPE_BINDING_RESPONSE:
 			dbg("Binding response");
-			break;
+			return es_local_process_binding_response(node, &msg);
 		case STUN_MSG_TYPE_BINDING_ERROR:
 			dbg("Binding error");
-			break;
+			return es_local_process_binding_error(node, &msg);
 		default:
 			dbg("Something else");
 			break;
