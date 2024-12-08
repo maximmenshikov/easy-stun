@@ -27,6 +27,23 @@ int main(int argc, const char *argv[])
         return -1;
     }
 
+    if (params->fork)
+    {
+        pid_t pid = fork();
+
+        if (pid < 0)
+            exit(EXIT_FAILURE);
+        if (pid > 0)
+            exit(EXIT_SUCCESS);
+        if (setsid() < 0)
+            exit(EXIT_FAILURE);
+
+        chdir("/");
+        freopen("/dev/null", "r", stdin);
+        freopen("/dev/null", "w", stdout);
+        freopen("/dev/null", "w", stderr);
+    }
+
     es_init(node);
     es_init_params(node, params);
     rc = es_twoway_bind(node);

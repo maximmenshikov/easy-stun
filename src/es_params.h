@@ -6,6 +6,7 @@ typedef struct es_params
 {
     char config[512];
     uint32_t present_fields;
+    es_bool fork;
 
 #define ES_TOTAL_PARAMS (9)
 

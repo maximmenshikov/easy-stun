@@ -129,6 +129,10 @@ es_params_read_from_cmdline(es_params *params, int argc, const char *argv[])
 
             ++i;
         }
+        else if (strcmp(argv[i], "--fork") == 0)
+        {
+            params->fork = ES_TRUE;
+        }
     }
 
     return ES_EOK;
