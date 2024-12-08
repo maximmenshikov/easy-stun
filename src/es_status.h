@@ -4,6 +4,8 @@ typedef enum es_status {
     ES_EOK,
 
     ES_ENOMEM,
+    ES_ESTATE,
+    ES_ENOTSUPP,
 
     /* params */
     ES_EPARAMMISSING,
@@ -22,7 +24,6 @@ typedef enum es_status {
     ES_ENODATA,
     ES_ERECVFAIL,
     ES_ERESPONSEINVALID,
-    ES_ENOTSUPP,
 
     ES_EWRONGTID,
 } es_status;

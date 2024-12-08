@@ -168,6 +168,9 @@ es_local_recv(es_node *node)
     es_msg msg;
     es_bool processed = ES_FALSE;
 
+    if (node->status.code != ES_MAP_STATUS_SENT)
+        return ES_ESTATE;
+
     msg.hdr = (stun_hdr *)buf;
     msg.max_len = sizeof(buf);
 
