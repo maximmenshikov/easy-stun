@@ -6,6 +6,8 @@ typedef struct es_params
 {
 	uint16_t local_port;
 	char remote_addr[512];
+	char username[512];
+	char password[512];
 	uint16_t remote_port;
 } es_params;
 

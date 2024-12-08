@@ -5,12 +5,16 @@
 #include "es_params.h"
 #include "es_status.h"
 
+#define BIT(_num) (1 << (_num))
+
 es_status
 es_params_init(es_params *params, int argc, const char *argv[])
 {
 	size_t i;
-	const int total_params = 3;
+	const int total_params = 5;
 	int param_bits = 0;
+
+	memset(params, 0, sizeof(es_params));
 
 	for (i = 1; i < argc; ++i)
 	{
@@ -20,7 +24,7 @@ es_params_init(es_params *params, int argc, const char *argv[])
 				return ES_EPARAMMISSING;
 
 			params->local_port = atoi(argv[i + 1]);
-			param_bits |= 1;
+			param_bits |= BIT(0);
 
 			++i;
 		}
@@ -33,7 +37,7 @@ es_params_init(es_params *params, int argc, const char *argv[])
 				return ES_EPARAMINVALID;
 
 			strcpy(params->remote_addr, argv[i + 1]);
-			param_bits |= 2;
+			param_bits |= BIT(1);
 
 			++i;
 		}
@@ -43,7 +47,33 @@ es_params_init(es_params *params, int argc, const char *argv[])
 				return ES_EPARAMMISSING;
 
 			params->remote_port = atoi(argv[i + 1]);
-			param_bits |= 4;
+			param_bits |= BIT(2);
+
+			++i;
+		}
+		else if (strcmp(argv[i], "--username") == 0)
+		{
+			if ((i + 1) >= argc)
+				return ES_EPARAMMISSING;
+
+			if (strlen(argv[i + 1]) + 1 >= sizeof(params->username))
+				return ES_EPARAMINVALID;
+
+			strcpy(params->username, argv[i + 1]);
+			param_bits |= BIT(3);
+
+			++i;
+		}
+		else if (strcmp(argv[i], "--password") == 0)
+		{
+			if ((i + 1) >= argc)
+				return ES_EPARAMMISSING;
+
+			if (strlen(argv[i + 1]) + 1 >= sizeof(params->password))
+				return ES_EPARAMINVALID;
+
+			strcpy(params->password, argv[i + 1]);
+			param_bits |= BIT(4);
 
 			++i;
 		}

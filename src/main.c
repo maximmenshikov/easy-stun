@@ -18,8 +18,8 @@ int main(int argc, const char *argv[])
 	}
 
 	es_init(&node);
-	es_local_bind(&node, params.local_port);
-	es_remote_bind(&node, params.remote_addr, params.remote_port);
+	es_local_bind(&node, &params);
+	es_remote_bind(&node, &params);
 	es_fini(&node);
 
 	return 0;

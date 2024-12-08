@@ -9,7 +9,7 @@
 #include "es_status.h"
 
 es_status
-es_local_bind(es_node *node, uint16_t bind_port)
+es_local_bind(es_node *node, es_params *params)
 {
 	struct sockaddr_in addr = { 0 };
 	int ret;
@@ -25,7 +25,7 @@ es_local_bind(es_node *node, uint16_t bind_port)
 
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(bind_port);
+	addr.sin_port = htons(params->local_port);
 
 	ret = bind(sk, (struct sockaddr *)&addr, sizeof(addr));
 	if (ret < 0)
