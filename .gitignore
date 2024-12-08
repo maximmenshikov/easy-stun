@@ -33,3 +33,5 @@
 
 /easy-stun
 /.build_wrap
+._*
+
