@@ -1,4 +1,4 @@
-DBG_LEVEL ?= 3
+DBG_LEVEL ?= 1
 
 PRJ = easy-stun
 

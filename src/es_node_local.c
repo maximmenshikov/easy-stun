@@ -169,7 +169,10 @@ es_local_recv(es_node *node)
     es_bool processed = ES_FALSE;
 
     if (node->status.code != ES_MAP_STATUS_SENT)
+    {
+        err("Invalid state");
         return ES_ESTATE;
+    }
 
     msg.hdr = (stun_hdr *)buf;
     msg.max_len = sizeof(buf);
@@ -182,7 +185,6 @@ es_local_recv(es_node *node)
 
     if (select(node->sk + 1, &fds, NULL, NULL, &timeout) == 0)
     {
-        err("No data");
         return ES_ENODATA;
     }
 
@@ -205,7 +207,7 @@ es_local_recv(es_node *node)
 
         if (ntohl(hdr->magic_cookie) != STUN_MAGIC_COOKIE)
         {
-            err("Invalid STUN magic: %x vs %x", ntohl(hdr->magic_cookie),
+            dbg("Invalid STUN magic: %x vs %x", ntohl(hdr->magic_cookie),
                 STUN_MAGIC_COOKIE);
             break;
         }
@@ -222,13 +224,13 @@ es_local_recv(es_node *node)
         switch (message_type)
         {
             case STUN_MSG_TYPE_BINDING_RESPONSE:
-                dbg("Got binding response");
+                ring("Got binding response");
                 return es_local_process_binding_response(node, &msg);
             case STUN_MSG_TYPE_BINDING_ERROR:
-                dbg("Got binding error");
+                ring("Got binding error");
                 return es_local_process_binding_error(node, &msg);
             default:
-                dbg("Got unsupported message");
+                warn("Got unsupported message");
                 break;
         }
 
