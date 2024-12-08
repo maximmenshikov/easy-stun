@@ -8,6 +8,7 @@ typedef enum es_status {
     ES_ENOTSUPP,
     ES_EIO,
     ES_EINVAL,
+    ES_EFAIL,
 
     /* params */
     ES_EPARAMMISSING,

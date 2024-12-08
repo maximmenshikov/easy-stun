@@ -7,6 +7,7 @@ OBJS = src/main.o \
        src/es_node.o \
        src/es_node_local.o \
        src/es_node_local_cr.o \
+       src/es_node_local_loop.o \
        src/es_node_remote.o \
        src/es_params.o
 

@@ -177,7 +177,6 @@ es_local_recv(es_node *node)
 
     if (node->status.code != ES_MAP_STATUS_SENT)
     {
-        err("Invalid state");
         return ES_ESTATE;
     }
 

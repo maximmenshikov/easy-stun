@@ -1,6 +1,7 @@
 #include "es_node.h"
 #include "es_params.h"
 #include <stdio.h>
+#include <unistd.h>
 #include "stun.h"
 #include "debug.h"
 
@@ -29,7 +30,11 @@ int main(int argc, const char *argv[])
     es_init_params(&node, &params);
     es_local_bind(&node);
     es_remote_bind(&node);
-    es_local_recv(&node);
+    es_local_start_recv(&node);
+    while (ES_TRUE)
+    {
+        pause();
+    }
     es_fini(&node);
 
     return 0;
