@@ -15,6 +15,7 @@
 #include "helper.h"
 #include <signal.h>
 #include <time.h>
+#include <errno.h>
 #ifdef __APPLE__
 #include "mac_time.h"
 #endif
