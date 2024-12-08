@@ -23,4 +23,6 @@ typedef enum es_status {
     ES_ERECVFAIL,
     ES_ERESPONSEINVALID,
     ES_ENOTSUPP,
+
+    ES_EWRONGTID,
 } es_status;

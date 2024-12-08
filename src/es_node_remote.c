@@ -72,6 +72,9 @@ es_remote_bind(es_node *node, es_params *params)
         goto err;
     }
 
+    es_init_status(node, ES_MAP_STATUS_SENT);
+    es_expect_tid(node, msg.hdr->tid);
+
     dbg("Sent %d bytes", ret);
     return ES_EOK;
 

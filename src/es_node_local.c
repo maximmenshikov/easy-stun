@@ -207,6 +207,14 @@ es_local_recv(es_node *node)
             break;
         }
 
+        if (memcmp(hdr->tid,
+                   node->status.expected_tid,
+                   sizeof(node->status.expected_tid)) != 0)
+        {
+            err("Unexpected transaction ID");
+            return ES_EWRONGTID;
+        }
+
         message_type = ntohs(hdr->message_type);
         switch (message_type)
         {

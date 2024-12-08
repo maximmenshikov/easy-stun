@@ -27,3 +27,9 @@ es_init_status(es_node *node, es_map_status_code code)
     memset(&node->status, 0, sizeof(es_node_status));
     node->status.code = code;
 }
+
+void
+es_expect_tid(es_node *node, uint8_t *tid)
+{
+    memcpy(node->status.expected_tid, tid, sizeof(node->status.expected_tid));
+}
