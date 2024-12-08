@@ -28,8 +28,7 @@ int main(int argc, const char *argv[])
 
     es_init(&node);
     es_init_params(&node, &params);
-    es_local_bind(&node);
-    es_remote_bind(&node);
+    es_twoway_bind(&node);
     es_local_start_recv(&node);
     while (ES_TRUE)
     {

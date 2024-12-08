@@ -189,9 +189,14 @@ es_local_recv(es_node *node)
     memset(&timeout, 0, sizeof(timeout));
     timeout.tv_sec = 2;
 
-    if (select(node->sk + 1, &fds, NULL, NULL, &timeout) == 0)
+    ret = select(node->sk + 1, &fds, NULL, NULL, &timeout);
+    if (ret == 0)
     {
         return ES_ENODATA;
+    }
+    else if (ret == -1)
+    {
+        return ES_ERECVFAIL;
     }
 
     ret = recvfrom(node->sk, buf, sizeof(buf), 0, (struct sockaddr *)&addr,

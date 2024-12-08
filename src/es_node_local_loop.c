@@ -33,7 +33,10 @@ static es_node *loop_node;
 void
 timer_callback(union sigval signo)
 {
-    es_local_recv(loop_node);
+    if (es_status_is_conn_broken(es_local_recv(loop_node)))
+    {
+        es_twoway_bind(loop_node);
+    }
 }
 #else
 void
@@ -42,7 +45,10 @@ timer_callback(int signo, siginfo_t *info,
 {
     if (info->si_code == SI_TIMER)
     {
-        es_local_recv(loop_node);
+        if (es_status_is_conn_broken(es_local_recv(loop_node)))
+        {
+            es_twoway_bind(loop_node);
+        }
     }
 }
 #endif

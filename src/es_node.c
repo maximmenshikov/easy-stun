@@ -21,6 +21,25 @@ es_fini(es_node *node)
     close(node->sk);
 }
 
+es_status
+es_twoway_bind(es_node *node)
+{
+    es_status rc;
+
+    if (node->sk != -1)
+    {
+        close(node->sk);
+        node->sk = -1;
+    }
+
+    es_init_status(node, ES_MAP_STATUS_NONE);
+    rc = es_local_bind(node);
+    if (rc != ES_EOK)
+        return rc;
+
+    return es_remote_bind(node);
+}
+
 void
 es_init_status(es_node *node, es_map_status_code code)
 {

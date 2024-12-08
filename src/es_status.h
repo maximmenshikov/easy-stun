@@ -1,4 +1,5 @@
 #pragma once
+#include "es_bool.h"
 
 typedef enum es_status {
     ES_EOK,
@@ -32,3 +33,16 @@ typedef enum es_status {
 
     ES_ESCRIPTFAIL,
 } es_status;
+
+/** Check if connection is broken */
+static es_bool es_status_is_conn_broken(es_status rc)
+{
+    switch (rc)
+    {
+        case ES_ERECVFAIL:
+        case ES_ESENDFAIL:
+            return ES_TRUE;
+        default:
+            return ES_FALSE;
+    }
+}
