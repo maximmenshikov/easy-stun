@@ -1,2 +1,2 @@
 # easy-stun
-easy stun server
+Easy STUN client
