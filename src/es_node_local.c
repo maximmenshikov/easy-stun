@@ -87,6 +87,8 @@ es_local_process_binding_response(es_node *node,
 
     ma = (stun_attr_mapped_address *)attr->value;
 
+    es_init_status(node, ES_MAP_STATUS_MAPPED);
+
     switch (ma->family)
     {
         case STUN_AF_IPV4:
@@ -107,9 +109,10 @@ es_local_process_binding_response(es_node *node,
 
             ip.s_addr = htonl(val);
 
-            node->mapped_port = port;
-            sprintf(node->mapped_addr, "%s", inet_ntoa(ip));
-            dbg("Mapped to %s:%u", node->mapped_addr, node->mapped_port);
+            node->status.mapped_port = port;
+            sprintf(node->status.mapped_addr, "%s", inet_ntoa(ip));
+            dbg("Mapped to %s:%u", node->status.mapped_addr,
+                node->status.mapped_port);
             break;
         }
         case STUN_AF_IPV6:
@@ -120,8 +123,6 @@ es_local_process_binding_response(es_node *node,
         }
     }
 
-    node->map_error = 0;
-    node->status = ES_MAP_STATUS_MAPPED;
     return ES_EOK;
 }
 
@@ -146,10 +147,9 @@ es_local_process_binding_error(es_node *node,
 
     cls_number = ntohl(ec->cls_number);
 
-    memset(node->mapped_addr, 0, sizeof(node->mapped_addr));
-    node->mapped_port = 0;
-    node->map_error = ((cls_number >> 8) & 0x07) * 100 + (cls_number & 0xFF);
-    node->status = ES_MAP_STATUS_ERROR;
+    es_init_status(node, ES_MAP_STATUS_ERROR);
+    node->status.map_error = ((cls_number >> 8) & 0x07) * 100 +
+        (cls_number & 0xFF);
     return ES_EOK;
 }
 
@@ -198,7 +198,8 @@ es_local_recv(es_node *node)
 
     if (ntohl(hdr->magic_cookie) != STUN_MAGIC_COOKIE)
     {
-        err("Invalid magic: %x vs %x", ntohl(hdr->magic_cookie), STUN_MAGIC_COOKIE);
+        err("Invalid magic: %x vs %x", ntohl(hdr->magic_cookie),
+            STUN_MAGIC_COOKIE);
         return ES_ERESPONSEINVALID;
     }
 
@@ -206,10 +207,10 @@ es_local_recv(es_node *node)
     switch (message_type)
     {
         case STUN_MSG_TYPE_BINDING_RESPONSE:
-            dbg("Binding response");
+            dbg("Got binding response");
             return es_local_process_binding_response(node, &msg);
         case STUN_MSG_TYPE_BINDING_ERROR:
-            dbg("Binding error");
+            dbg("Got binding error");
             return es_local_process_binding_error(node, &msg);
         default:
             dbg("Something else");

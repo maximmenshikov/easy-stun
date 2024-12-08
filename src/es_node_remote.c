@@ -63,8 +63,8 @@ es_remote_bind(es_node *node, es_params *params)
                   es_msg_add_integrity(&msg, params->password));
 
     msg.hdr->message_len = htons(msg.hdr->message_len);
-    ret = sendto(node->sk, req, ntohs(msg.hdr->message_len) + sizeof(stun_hdr), 0,
-        (struct sockaddr *)&addr, sizeof(addr));
+    ret = sendto(node->sk, req, ntohs(msg.hdr->message_len) + sizeof(stun_hdr),
+        0, (struct sockaddr *)&addr, sizeof(addr));
     if (ret < 0)
     {
         err("Failed to send message: %s", strerror(errno));

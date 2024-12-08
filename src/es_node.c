@@ -20,3 +20,10 @@ es_fini(es_node *node)
 {
     close(node->sk);
 }
+
+void
+es_init_status(es_node *node, es_map_status_code code)
+{
+    memset(&node->status, 0, sizeof(es_node_status));
+    node->status.code = code;
+}
