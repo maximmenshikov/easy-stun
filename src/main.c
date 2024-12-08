@@ -20,6 +20,7 @@ int main(int argc, const char *argv[])
 	es_init(&node);
 	es_local_bind(&node, &params);
 	es_remote_bind(&node, &params);
+	es_local_recv(&node);
 	es_fini(&node);
 
 	return 0;

@@ -32,7 +32,7 @@ static void
 es_msg_hdr_init(es_msg *msg, uint16_t type)
 {
 	msg->hdr->message_type = htons(type);
-	msg->hdr->magic_cookie = htonl(0x2112A442);
+	msg->hdr->magic_cookie = htonl(STUN_MAGIC_COOKIE);
     for (int i = 0; i < sizeof(msg->hdr->tid); ++i)
     {
         msg->hdr->tid[i] = (uint8_t)(rand() % 256);

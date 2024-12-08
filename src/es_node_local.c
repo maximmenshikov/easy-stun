@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include "es_node.h"
 #include "es_status.h"
+#include "stun.h"
+#include "debug.h"
 
 es_status
 es_local_bind(es_node *node, es_params *params)
@@ -54,4 +56,63 @@ es_local_bind(es_node *node, es_params *params)
 err:
 	close(sk);
 	return rc;
+}
+
+es_status
+es_local_recv(es_node *node)
+{
+	char msg[4096];
+	unsigned int addr_len;
+	struct timeval timeout;
+	struct sockaddr_in addr = {0};
+	fd_set fds;
+	int ret;
+	stun_hdr *hdr;
+	uint16_t message_type;
+
+	FD_ZERO(&fds);
+	FD_SET(node->sk, &fds);
+
+	memset(&timeout, 0, sizeof(timeout));
+	timeout.tv_sec = 2;
+
+	if (select(node->sk + 1, &fds, NULL, NULL, &timeout) == 0)
+	{
+		err("No data");
+		return ES_ENODATA;
+	}
+
+	ret = recvfrom(node->sk, msg, sizeof(msg), 0, &addr, &addr_len);
+	if (ret == -1)
+	{
+		err("Receive failure");
+		return ES_ERECVFAIL;
+	}
+
+	hdr = (stun_hdr *)msg;
+	if (ret < sizeof(stun_hdr))
+	{
+		err("Invalid response: %lu vs %lu", ret, sizeof(stun_hdr));
+		return ES_ERESPONSEINVALID;
+	}
+
+	if (ntohl(hdr->magic_cookie) != STUN_MAGIC_COOKIE)
+	{
+		err("Invalid magic: %x vs %x", ntohl(hdr->magic_cookie), STUN_MAGIC_COOKIE);
+		return ES_ERESPONSEINVALID;
+	}
+
+	message_type = ntohs(hdr->message_type);
+	switch (message_type)
+	{
+		case STUN_MSG_TYPE_BINDING_RESPONSE:
+			dbg("Binding response");
+			break;
+		case STUN_MSG_TYPE_BINDING_ERROR:
+			dbg("Binding error");
+			break;
+		default:
+			dbg("Something else");
+			break;
+	}
 }
