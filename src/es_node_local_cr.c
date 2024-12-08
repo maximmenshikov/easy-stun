@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -16,5 +17,16 @@
 es_status
 es_local_conn_request(es_node *node, const char *buf, uint32_t buf_len)
 {
+    char full_cmd[1024];
+    int ret;
+
+    sprintf(full_cmd, "%s ", node->params.script);
+    ret = system(full_cmd);
+    ring("Script '%s' executed with return code %d", node->params.script, ret);
+    if (ret != 0)
+    {
+        return ES_ESCRIPTFAIL;
+    }
+
     return ES_EOK;
 }

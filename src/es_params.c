@@ -16,6 +16,7 @@ parse_argument(es_params *params, const char *var, const char *value)
         {                                                                   \
             params->__struct_name = atoi(value);                            \
             params->present_fields |= BIT(__bit);                           \
+            return ES_EOK;                                                  \
         }                                                                   \
     } while (0)
     #define PARSE_STR(__name, __struct_name, __bit) do {                    \
@@ -25,6 +26,7 @@ parse_argument(es_params *params, const char *var, const char *value)
                 return ES_EPARAMINVALID;                                    \
             strcpy(params->__struct_name, value);                           \
             params->present_fields |= BIT(__bit);                           \
+            return ES_EOK;                                                  \
         }                                                                   \
     } while (0)
 
@@ -35,14 +37,9 @@ parse_argument(es_params *params, const char *var, const char *value)
     PARSE_STR("password", password, 4);
     PARSE_STR("script", script, 5);
 
-    if (params->present_fields !=  ((1 << ES_TOTAL_PARAMS) - 1))
-    {
-        return ES_EPARAMINSUFFICIENT;
-    }
-
     #undef PARSE_PORT
     #undef PARSE_STR
-    return ES_EOK;
+    return ES_EINVAL;
 }
 
 es_status
@@ -78,10 +75,17 @@ es_params_read_config(es_params *params)
         if (cmd_end != NULL)
             *cmd_end = '\0';
 
-        parse_argument(params, command, rest);
+        rc = parse_argument(params, command, rest);
+        if (rc != ES_EOK)
+            return rc;
     }
 
     fclose(f);
+
+    if (params->present_fields !=  ((1 << ES_TOTAL_PARAMS) - 1))
+    {
+        return ES_EPARAMINSUFFICIENT;
+    }
 
     return ES_EOK;
 }

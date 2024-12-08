@@ -28,4 +28,6 @@ typedef enum es_status {
     ES_ERESPONSEINVALID,
 
     ES_EWRONGTID,
+
+    ES_ESCRIPTFAIL,
 } es_status;
