@@ -1,0 +1,29 @@
+{
+	"settings":
+	{
+        "auto_complete": true,
+        "ecc_flags_sources": [
+	    	{"file": "compile_commands.json", "search_in": "${project_path}/build"},
+	  	],
+	  	"auto_indent": true,
+        "tab_size": 4,
+        "translate_tabs_to_spaces": true,
+        "rulers": [80]
+	},
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"build_systems":
+    [
+        {
+            "name": "STUN build",
+            "cmd": ["./scripts/make.sh"],
+            "shell": true,
+            "working_dir": "${project_path:${folder}}",
+            "file_regex": "([a-z]?:?[\\w.\\\\/]+)[(:]([0-9]+)[,:]?([0-9]+)?[)]?:(.*)$",
+        }
+    ]
+}
