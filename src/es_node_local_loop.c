@@ -34,6 +34,7 @@ static void
 timer_callback_rebind(void)
 {
     es_bool rebind = ES_FALSE;
+    es_bool keep_alive = ES_FALSE;
 
     counter++;
 
@@ -43,19 +44,18 @@ timer_callback_rebind(void)
             loop_node->params.remote_addr,
             (unsigned)loop_node->params.remote_port);
         rebind = ES_TRUE;
+
+        es_twoway_bind(loop_node);
     }
 
     if ((counter % loop_node->params.keepalive_interval) == 0)
     {
-        dbg("[%s:%u] Connection needs keepalive - rebind",
+        dbg("[%s:%u] Connection needs keepalive - ping",
             loop_node->params.remote_addr,
             (unsigned)loop_node->params.remote_port);
-        rebind = ES_TRUE;
-    }
-
-    if (rebind)
-    {
-        es_twoway_bind(loop_node);
+        keep_alive = ES_TRUE;
+        es_remote_ping(loop_node, ES_FALSE);
+        es_remote_ping(loop_node, ES_TRUE);
     }
 }
 

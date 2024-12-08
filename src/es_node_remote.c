@@ -19,6 +19,53 @@
 #include "debug.h"
 
 es_status
+es_remote_ping(es_node *node, es_bool acs)
+{
+    es_status rc;
+    struct hostent *host;
+    struct sockaddr_in addr;
+    char req[10] = { 0 };
+    int ret;
+
+    host = gethostbyname(acs
+      ? node->params.acs_addr
+      : node->params.remote_addr);
+    if (host == NULL)
+    {
+        rc = ES_EDNSFAIL;
+        goto err;
+    }
+
+    addr.sin_port = htons(acs
+      ? node->params.acs_port
+      : node->params.remote_port);
+    addr.sin_family = AF_INET;
+    memcpy(&(addr.sin_addr), host->h_addr_list[0], host->h_length);
+
+    ret = sendto(node->sk, req, sizeof(req), 0,
+      (struct sockaddr *)&addr, sizeof(addr));
+    if (ret < 0)
+    {
+        err("Failed to send ping: %s", strerror(errno));
+        rc = ES_ESENDFAIL;
+        goto err;
+    }
+
+    ring("[%s:%u] Sent ping with %d bytes",
+         acs
+          ? node->params.acs_addr
+          : node->params.remote_addr,
+         acs
+          ? (unsigned)node->params.acs_port
+          : (unsigned)node->params.remote_port,
+         ret);
+    return ES_EOK;
+
+err:
+    return rc;
+}
+
+es_status
 es_remote_bind(es_node *node)
 {
     es_status rc;

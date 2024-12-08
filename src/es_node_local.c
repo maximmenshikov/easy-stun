@@ -194,11 +194,6 @@ es_local_recv(es_node *node)
     es_msg msg;
     es_bool processed = ES_FALSE;
 
-    if (node->status.code != ES_MAP_STATUS_SENT)
-    {
-        return ES_ESTATE;
-    }
-
     msg.hdr = (stun_hdr *)buf;
     msg.max_len = sizeof(buf);
 
@@ -211,13 +206,16 @@ es_local_recv(es_node *node)
     ret = select(node->sk + 1, &fds, NULL, NULL, &timeout);
     if (ret == 0)
     {
+        dbg("Selecting - no data");
         return ES_ENODATA;
     }
     else if (ret == -1)
     {
+        dbg("Selecting - recv failed");
         return ES_ERECVFAIL;
     }
 
+    dbg("Selecting");
     ret = recvfrom(node->sk, buf, sizeof(buf), 0, (struct sockaddr *)&addr,
                    &addr_len);
     if (ret == -1)

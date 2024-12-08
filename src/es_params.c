@@ -48,10 +48,13 @@ parse_argument(es_params *params, const char *var, const char *value)
     PARSE_STR("password", password, 4);
     PARSE_STR("script", script, 5);
     PARSE_TIMEOUT("keepalive-interval", keepalive_interval, 6);
+    PARSE_STR("acs-addr", acs_addr, 7);
+    PARSE_PORT("acs-port", acs_port, 8);
 
     #undef PARSE_PORT
     #undef PARSE_TIMEOUT
     #undef PARSE_STR
+
     return ES_EINVAL;
 }
 

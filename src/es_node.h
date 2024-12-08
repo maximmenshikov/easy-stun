@@ -47,3 +47,4 @@ extern es_status es_local_start_recv(es_node *node);
 extern es_status es_local_conn_request(es_node *node, const char *buf,
     uint32_t buf_len);
 extern es_status es_remote_bind(es_node *node);
+extern es_status es_remote_ping(es_node *node, es_bool acs);
