@@ -31,4 +31,5 @@
 *.out
 *.app
 
-easy-stun
+/easy-stun
+/.build_wrap
