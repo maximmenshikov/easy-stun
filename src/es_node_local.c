@@ -12,6 +12,7 @@
 #include "es_msg.h"
 #include "es_bool.h"
 #include "debug.h"
+#include "helper.h"
 
 es_status
 es_local_bind(es_node *node, es_params *params)
@@ -165,6 +166,7 @@ es_local_recv(es_node *node)
     stun_hdr *hdr;
     uint16_t message_type;
     es_msg msg;
+    es_bool processed = ES_FALSE;
 
     msg.hdr = (stun_hdr *)buf;
     msg.max_len = sizeof(buf);
@@ -189,33 +191,43 @@ es_local_recv(es_node *node)
         return ES_ERECVFAIL;
     }
 
-    hdr = (stun_hdr *)buf;
-    if (ret < sizeof(stun_hdr))
+    ES_BREAKABLE_START()
     {
-        err("Invalid response: %d vs %lu", ret, sizeof(stun_hdr));
-        return ES_ERESPONSEINVALID;
-    }
-
-    if (ntohl(hdr->magic_cookie) != STUN_MAGIC_COOKIE)
-    {
-        err("Invalid magic: %x vs %x", ntohl(hdr->magic_cookie),
-            STUN_MAGIC_COOKIE);
-        return ES_ERESPONSEINVALID;
-    }
-
-    message_type = ntohs(hdr->message_type);
-    switch (message_type)
-    {
-        case STUN_MSG_TYPE_BINDING_RESPONSE:
-            dbg("Got binding response");
-            return es_local_process_binding_response(node, &msg);
-        case STUN_MSG_TYPE_BINDING_ERROR:
-            dbg("Got binding error");
-            return es_local_process_binding_error(node, &msg);
-        default:
-            dbg("Something else");
+        hdr = (stun_hdr *)buf;
+        if (ret < sizeof(stun_hdr))
+        {
+            dbg("Not STUN response: %d vs %lu", ret, sizeof(stun_hdr));
             break;
-    }
+        }
 
-    return ES_EOK;
+        if (ntohl(hdr->magic_cookie) != STUN_MAGIC_COOKIE)
+        {
+            err("Invalid STUN magic: %x vs %x", ntohl(hdr->magic_cookie),
+                STUN_MAGIC_COOKIE);
+            break;
+        }
+
+        message_type = ntohs(hdr->message_type);
+        switch (message_type)
+        {
+            case STUN_MSG_TYPE_BINDING_RESPONSE:
+                dbg("Got binding response");
+                return es_local_process_binding_response(node, &msg);
+            case STUN_MSG_TYPE_BINDING_ERROR:
+                dbg("Got binding error");
+                return es_local_process_binding_error(node, &msg);
+            default:
+                dbg("Got unsupported message");
+                break;
+        }
+
+        processed = ES_TRUE;
+    }
+    ES_BREAKABLE_END();
+
+    if (processed)
+        return ES_EOK;
+
+    /* can be connection request */
+    return es_local_conn_request(node, buf, ret);
 }

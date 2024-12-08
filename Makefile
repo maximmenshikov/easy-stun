@@ -2,7 +2,13 @@ DBG_LEVEL ?= 3
 
 PRJ = easy-stun
 
-OBJS = src/main.o src/es_msg.o src/es_node.o src/es_node_local.o src/es_node_remote.o src/es_params.o
+OBJS = src/main.o \
+       src/es_msg.o \
+       src/es_node.o \
+       src/es_node_local.o \
+       src/es_node_local_cr.o \
+       src/es_node_remote.o \
+       src/es_params.o
 
 PRJ_LDFLAGS += -lssl -lcrypto
 

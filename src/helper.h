@@ -17,3 +17,6 @@
         __v = 0; \
     __v; \
 })
+
+#define ES_BREAKABLE_START() do {
+#define ES_BREAKABLE_END() } while (0)
