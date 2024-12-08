@@ -115,4 +115,6 @@ es_local_recv(es_node *node)
 			dbg("Something else");
 			break;
 	}
+
+	return ES_EOK;
 }
