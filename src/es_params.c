@@ -55,7 +55,7 @@ parse_argument(es_params *params, const char *var, const char *value)
     #undef PARSE_TIMEOUT
     #undef PARSE_STR
 
-    return ES_EINVAL;
+    return ES_EOK;
 }
 
 es_status
@@ -77,7 +77,7 @@ es_params_read_config(es_params *params)
         char *rest;
 
         if (cmd_end == NULL)
-            return ES_EINVAL;
+            continue;
 
         *cmd_end = '\0';
         command = line;
