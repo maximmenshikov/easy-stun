@@ -26,17 +26,44 @@
 #define USED_CLOCK (CLOCK_MONOTONIC)
 #endif
 
-static timer_t rtc_timer;
+static timer_t timer;
 static es_node *loop_node;
+static int counter = 0;
+
+static void
+timer_callback_rebind(void)
+{
+    es_bool rebind = ES_FALSE;
+
+    counter++;
+
+    if (es_status_is_conn_broken(es_local_recv(loop_node)))
+    {
+        dbg("[%s:%u] Connection is broken - rebind",
+            loop_node->params.remote_addr,
+            (unsigned)loop_node->params.remote_port);
+        rebind = ES_TRUE;
+    }
+
+    if ((counter % loop_node->params.keepalive_interval) == 0)
+    {
+        dbg("[%s:%u] Connection needs keepalive - rebind",
+            loop_node->params.remote_addr,
+            (unsigned)loop_node->params.remote_port);
+        rebind = ES_TRUE;
+    }
+
+    if (rebind)
+    {
+        es_twoway_bind(loop_node);
+    }
+}
 
 #ifdef __APPLE__
 void
 timer_callback(union sigval signo)
 {
-    if (es_status_is_conn_broken(es_local_recv(loop_node)))
-    {
-        es_twoway_bind(loop_node);
-    }
+    timer_callback_rebind();
 }
 #else
 void
@@ -45,10 +72,7 @@ timer_callback(int signo, siginfo_t *info,
 {
     if (info->si_code == SI_TIMER)
     {
-        if (es_status_is_conn_broken(es_local_recv(loop_node)))
-        {
-            es_twoway_bind(loop_node);
-        }
+        timer_callback_rebind();
     }
 }
 #endif
@@ -95,12 +119,12 @@ es_local_start_recv(es_node *node)
     value.it_interval.tv_sec = 1;
     value.it_interval.tv_nsec = 0;
 
-    if (timer_create(USED_CLOCK, &sigev, &rtc_timer) != 0)
+    if (timer_create(USED_CLOCK, &sigev, &timer) != 0)
     {
         printf("timer_create() failed: %s\n", strerror(errno));
         return ES_EFAIL;
     }
 
-    timer_settime(rtc_timer, 0, &value, NULL);
+    timer_settime(timer, 0, &value, NULL);
     return ES_EOK;
 }

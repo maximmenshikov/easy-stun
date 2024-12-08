@@ -22,6 +22,14 @@ parse_argument(es_params *params, const char *var, const char *value)
             return ES_EOK;                                                  \
         }                                                                   \
     } while (0)
+    #define PARSE_TIMEOUT(__name, __struct_name, __bit) do {                \
+        if (strcmp(var, __name) == 0)                                       \
+        {                                                                   \
+            params->__struct_name = atoi(value);                            \
+            params->present_fields |= BIT(__bit);                           \
+            return ES_EOK;                                                  \
+        }                                                                   \
+    } while (0)
     #define PARSE_STR(__name, __struct_name, __bit) do {                    \
         if (strcmp(var, __name) == 0)                                       \
         {                                                                   \
@@ -39,8 +47,10 @@ parse_argument(es_params *params, const char *var, const char *value)
     PARSE_STR("username", username, 3);
     PARSE_STR("password", password, 4);
     PARSE_STR("script", script, 5);
+    PARSE_TIMEOUT("keepalive-interval", keepalive_interval, 6);
 
     #undef PARSE_PORT
+    #undef PARSE_TIMEOUT
     #undef PARSE_STR
     return ES_EINVAL;
 }

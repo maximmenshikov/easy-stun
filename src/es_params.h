@@ -7,7 +7,7 @@ typedef struct es_params
     char config[512];
     uint8_t present_fields;
 
-#define ES_TOTAL_PARAMS (6)
+#define ES_TOTAL_PARAMS (7)
 
     uint16_t local_port;
     char remote_addr[512];
@@ -15,6 +15,7 @@ typedef struct es_params
     char username[512];
     char password[512];
     char script[512];
+    uint32_t keepalive_interval;
 } es_params;
 
 extern es_status es_params_read_from_cmdline(es_params *params, int argc,

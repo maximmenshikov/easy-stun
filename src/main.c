@@ -35,6 +35,7 @@ int main(int argc, const char *argv[])
         crit("Failed to bind");
         return -1;
     }
+
     rc = es_local_start_recv(node);
     if (rc != ES_EOK)
     {
