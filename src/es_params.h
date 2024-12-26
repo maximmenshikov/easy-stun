@@ -8,7 +8,7 @@ typedef struct es_params
     uint32_t present_fields;
     es_bool fork;
 
-#define ES_TOTAL_PARAMS (9)
+#define ES_TOTAL_PARAMS (10)
 
     uint16_t local_port;
     char remote_addr[512];
@@ -19,6 +19,7 @@ typedef struct es_params
     uint32_t keepalive_interval;
     char acs_addr[512];
     uint16_t acs_port;
+    uint32_t restart_interval;
 } es_params;
 
 extern es_status es_params_read_from_cmdline(es_params *params, int argc,
