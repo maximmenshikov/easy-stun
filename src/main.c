@@ -46,23 +46,38 @@ int main(int argc, const char *argv[])
 
     es_init(node);
     es_init_params(node, params);
-    rc = es_twoway_bind(node);
-    if (rc != ES_EOK)
-    {
-        crit("Failed to bind");
-        return -1;
-    }
 
-    rc = es_local_start_recv(node);
-    if (rc != ES_EOK)
-    {
-        crit("Failed to start receiving");
-        return -1;
-    }
 
-    while (ES_TRUE)
+    while (true)
     {
-        pause();
+        rc = es_twoway_bind(node);
+        if (rc != ES_EOK)
+        {
+            err("Failed to bind");
+            goto restart;
+        }
+
+        rc = es_local_start_recv(node);
+        if (rc != ES_EOK)
+        {
+            err("Failed to start receiving");
+            goto restart;
+        }
+
+        while (ES_TRUE)
+        {
+            pause();
+        }
+
+restart:
+        if (params->restart_interval == 0)
+        {
+            crit("exiting due to connection error");
+            return -1;
+        }
+
+        dbg("Restarting in %d seconds", params->restart_interval);
+        sleep(params->restart_interval);
     }
     es_fini(node);
 
